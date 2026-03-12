@@ -21,20 +21,21 @@ LABEL org.opencontainers.image.title="Paperless-NGX Uploader" \
       com.paperless_uploader.vsftpd_version="${VSFTPD_VERSION}" \
       com.paperless_uploader.wsdd_version="${WSDD_VERSION}"
 
-# Install necessary packages
+# Install necessary packages for extraction and initial setup
+RUN apk add --no-cache curl tar xz
+
+# Install s6-overlay
+RUN curl -L -s https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz | tar -Jxpf - -C / && \
+    curl -L -s https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz | tar -Jxpf - -C /
+
+# Install application packages
 RUN apk add --no-cache \
     samba \
     vsftpd \
     wsdd \
     bash \
     shadow \
-    curl \
-    tar \
     inotify-tools
-
-# Install s6-overlay
-RUN curl -L -s https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz | tar -Jxpf - -C / && \
-    curl -L -s https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz | tar -Jxpf - -C /
 
 # Create consumption directory
 RUN mkdir -p /consumption && chmod 777 /consumption
