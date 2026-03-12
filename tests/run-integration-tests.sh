@@ -36,8 +36,8 @@ echo -e "${GREEN}Using compose: $COMPOSE_CMD${NC}"
 
 # Optional build (only if Dockerfile is present in context and user wants to build)
 if [ "$1" == "--build" ]; then
-    echo -e "${GREEN}Building uploader image...${NC}"
-    $COMPOSE_CMD -f tests/docker-compose.test.yml build
+    echo -e "${GREEN}Building uploader image as localhost/uploader:test...${NC}"
+    $DOCKER_BIN build -t localhost/uploader:test uploader
 fi
 
 cleanup() {

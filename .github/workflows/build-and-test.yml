@@ -41,7 +41,7 @@ jobs:
         with:
           context: uploader
           load: true
-          tags: uploader:test
+          tags: localhost/uploader:test
           build-args: |
             SAMBA_VERSION=${{ steps.versions.outputs.samba }}
             VSFTPD_VERSION=${{ steps.versions.outputs.vsftpd }}

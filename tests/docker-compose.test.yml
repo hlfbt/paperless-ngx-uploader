@@ -1,6 +1,6 @@
 services:
   uploader:
-    image: uploader:test
+    image: localhost/uploader:test
     environment:
       - SAMBA_ENABLED=false # Simplify for integration test
       - FTP_ENABLED=false
