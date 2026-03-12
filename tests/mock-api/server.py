@@ -1,40 +1,37 @@
 import http.server
-import cgi
 import os
 import json
 
 class MockPaperlessHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/api/documents/post_document/':
-            ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
-            if ctype == 'multipart/form-data':
-                pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
-                pdict['CONTENT-LENGTH'] = int(self.headers.get('content-length'))
-                
-                form = cgi.FieldStorage(
-                    fp=self.rfile,
-                    headers=self.headers,
-                    environ={'REQUEST_METHOD': 'POST',
-                             'CONTENT_TYPE': self.headers.get('content-type'),
-                            }
-                )
-
+            content_length = int(self.headers.get('Content-Length', 0))
+            # We don't strictly need to parse multipart for a mock, 
+            # just check if it's there and returning 201.
+            body = self.rfile.read(content_length)
+            
+            # Simple check for 'document' string in multipart body
+            if b'name="document"' in body:
                 print(f"--- Received upload ---")
-                if 'document' in form:
-                    file_item = form['document']
-                    filename = file_item.filename
-                    file_content = file_item.file.read()
-                    print(f"Received file: {filename} ({len(file_content)} bytes)")
-                    
-                    # Store information for verification
-                    with open('/tmp/received_files.log', 'a') as f:
-                        f.write(f"{filename}\n")
+                
+                # Try to extract filename for logging
+                filename = "unknown"
+                if b'filename="' in body:
+                    parts = body.split(b'filename="')
+                    if len(parts) > 1:
+                        filename = parts[1].split(b'"')[0].decode(errors='ignore')
+                
+                print(f"Received file: {filename}")
+                
+                # Store information for verification
+                with open('/tmp/received_files.log', 'a') as f:
+                    f.write(f"{filename}\n")
 
-                    self.send_response(201)
-                    self.send_header('Content-type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(b'{"status": "OK", "id": "uuid-1234"}')
-                    return
+                self.send_response(201)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(b'{"status": "OK", "id": "uuid-1234"}')
+                return
 
             self.send_response(400)
             self.end_headers()
@@ -55,7 +52,6 @@ class MockPaperlessHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
 if __name__ == '__main__':
-    # Ensure log is empty on start
     if os.path.exists('/tmp/received_files.log'):
         os.remove('/tmp/received_files.log')
     
