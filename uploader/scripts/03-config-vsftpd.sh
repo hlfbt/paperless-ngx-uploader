@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv /bin/bash
 
 if [ "$FTP_ENABLED" != "true" ]; then
     echo "FTP is disabled."

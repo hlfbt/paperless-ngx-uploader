@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv /bin/bash
 
 # This script runs during the initialization phase (cont-init.d)
 # and can be used to dynamically enable/disable s6-rc services.

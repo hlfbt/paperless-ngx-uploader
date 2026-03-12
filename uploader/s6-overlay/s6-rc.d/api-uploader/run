@@ -1,8 +1,6 @@
-#!/command/with-contenv bash
-
+#!/command/with-contenv /bin/bash
 if [ "$API_UPLOADER_ENABLED" != "true" ]; then
-    echo "API Uploader is disabled. Exiting."
-    exit 0
+    exec sleep infinity
 fi
 
 echo "Starting API Uploader monitoring $CONSUMPTION_DIR..."
@@ -10,41 +8,26 @@ echo "Starting API Uploader monitoring $CONSUMPTION_DIR..."
 upload_file() {
     local file_path="$1"
     local file_name=$(basename "$file_path")
-    
+    [[ "$file_name" == .* ]] && return
     echo "Uploading $file_name to $PAPERLESS_URL..."
-    
-    # Perform upload
-    # -L to follow redirects
-    # -f to fail on HTTP errors
-    response=$(curl -s -L -f -H "Authorization: Token $PAPERLESS_TOKEN" \
-         -F "document=@$file_path" \
-         "${PAPERLESS_URL}api/documents/post_document/")
-    
+    curl -s -L -f -H "Authorization: Token $PAPERLESS_TOKEN" -F "document=@$file_path" "${PAPERLESS_URL}api/documents/post_document/"
     if [ $? -eq 0 ]; then
         if [ "$API_UPLOADER_ON_SUCCESS" = "archive" ]; then
-            local dest_path="$ARCHIVE_DIR/$(date +%Y-%m-%d_%H-%M-%S)_$file_name"
-            echo "Successfully uploaded $file_name. Moving to $dest_path."
-            mv "$file_path" "$dest_path"
+            mv "$file_path" "$ARCHIVE_DIR/$(date +%Y-%m-%d_%H-%M-%S)_$file_name"
         else
-            echo "Successfully uploaded $file_name. Deleting local copy."
             rm "$file_path"
         fi
-    else
-        echo "Failed to upload $file_name. Will retry on next scan or change."
-        echo "Response: $response"
     fi
 }
 
-# Initial scan for existing files
-find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do
-    upload_file "$file"
-done
+# Initial scan
+sleep 5
+find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do upload_file "$file"; done
 
-# Monitor for new files
-inotifywait -m -e close_write -e moved_to --format '%w%f' "$CONSUMPTION_DIR" | while read -r file; do
-    if [ -f "$file" ]; then
-        # Small delay to ensure file is fully written/settled
-        sleep 1
-        upload_file "$file"
-    fi
+# Polling fallback in background
+( while true; do sleep 30; find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do upload_file "$file"; done; done ) &
+
+# Main foreground process
+exec inotifywait -m -e close_write -e moved_to --format '%w%f' "$CONSUMPTION_DIR" | while read -r file; do
+    [ -f "$file" ] && sleep 1 && upload_file "$file"
 done

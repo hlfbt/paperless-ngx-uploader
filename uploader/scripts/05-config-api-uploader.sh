@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv /bin/bash
 
 if [ "$API_UPLOADER_ENABLED" != "true" ]; then
     echo "API Uploader is disabled."

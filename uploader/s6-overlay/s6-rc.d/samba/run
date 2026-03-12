@@ -1,9 +1,6 @@
-#!/command/with-contenv bash
-
+#!/command/with-contenv /bin/bash
 if [ "$SAMBA_ENABLED" != "true" ]; then
-    echo "Samba is disabled. Exiting."
-    exit 0
+    exec sleep infinity
 fi
-
-echo "Starting Samba (smbd)..."
-exec smbd -F --no-process-group --log-stdout </dev/null
+echo "Starting Samba..."
+exec smbd -F --no-process-group --log-stdout
