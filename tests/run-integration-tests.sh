@@ -6,19 +6,29 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Detect Docker/Podman
-DOCKER_BIN=$(command -v podman || command -v docker)
+# Detect Docker/Podman (prefer functional docker, then podman)
+if [ -z "$DOCKER_BIN" ]; then
+    if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+        DOCKER_BIN="docker"
+    elif command -v podman >/dev/null 2>&1; then
+        DOCKER_BIN="podman"
+    else
+        DOCKER_BIN="docker"
+    fi
+fi
 
 # Detect Compose (prefer plugin 'docker compose', then 'podman-compose', then 'docker-compose')
-if $DOCKER_BIN compose version >/dev/null 2>&1; then
-    COMPOSE_CMD="$DOCKER_BIN compose"
-elif command -v podman-compose >/dev/null 2>&1; then
-    COMPOSE_CMD="podman-compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-    COMPOSE_CMD="docker-compose"
-else
-    echo -e "${RED}Error: Neither docker compose, podman-compose, nor docker-compose found.${NC}"
-    exit 1
+if [ -z "$COMPOSE_CMD" ]; then
+    if $DOCKER_BIN compose version >/dev/null 2>&1; then
+        COMPOSE_CMD="$DOCKER_BIN compose"
+    elif command -v podman-compose >/dev/null 2>&1; then
+        COMPOSE_CMD="podman-compose"
+    elif command -v docker-compose >/dev/null 2>&1; then
+        COMPOSE_CMD="docker-compose"
+    else
+        echo -e "${RED}Error: No compose provider found for $DOCKER_BIN.${NC}"
+        exit 1
+    fi
 fi
 
 echo -e "${GREEN}Using binary: $DOCKER_BIN${NC}"
