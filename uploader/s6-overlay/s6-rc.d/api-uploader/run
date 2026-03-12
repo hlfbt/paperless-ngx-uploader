@@ -1,6 +1,7 @@
 #!/command/with-contenv /bin/bash
 if [ "$API_UPLOADER_ENABLED" != "true" ]; then
-    exec sleep infinity
+    echo "API Uploader is disabled. Exiting."
+    exit 0
 fi
 
 echo "Starting API Uploader monitoring $CONSUMPTION_DIR..."
@@ -20,14 +21,18 @@ upload_file() {
     fi
 }
 
-# Initial scan
-sleep 5
-find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do upload_file "$file"; done
+# Initial scan for existing files
+echo "Performing initial scan of $CONSUMPTION_DIR..."
+find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do
+    upload_file "$file"
+done
 
-# Polling fallback in background
-( while true; do sleep 30; find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do upload_file "$file"; done; done ) &
-
-# Main foreground process
+# Monitor for new files using inotifywait
+echo "Setting up inotify watches on $CONSUMPTION_DIR..."
 exec inotifywait -m -e close_write -e moved_to --format '%w%f' "$CONSUMPTION_DIR" | while read -r file; do
-    [ -f "$file" ] && sleep 1 && upload_file "$file"
+    if [ -f "$file" ]; then
+        # Small delay to ensure file is fully written/settled
+        sleep 1
+        upload_file "$file"
+    fi
 done

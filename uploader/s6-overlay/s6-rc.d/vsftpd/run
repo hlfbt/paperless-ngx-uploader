@@ -1,6 +1,7 @@
 #!/command/with-contenv /bin/bash
 if [ "$FTP_ENABLED" != "true" ]; then
-    exec sleep infinity
+    echo "FTP is disabled. Exiting."
+    exit 0
 fi
 echo "Starting vsftpd..."
 exec vsftpd /etc/vsftpd/vsftpd.conf

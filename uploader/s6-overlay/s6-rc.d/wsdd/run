@@ -1,6 +1,7 @@
 #!/command/with-contenv /bin/bash
 if [ "$WSDD_ENABLED" != "true" ] || [ "$SAMBA_ENABLED" != "true" ]; then
-    exec sleep infinity
+    echo "WSDD is disabled or Samba is missing. Exiting."
+    exit 0
 fi
 echo "Starting WSDD..."
 exec wsdd -v
