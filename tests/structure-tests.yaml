@@ -1,0 +1,55 @@
+schemaVersion: "2.0.0"
+
+metadataTest:
+  env:
+    - key: "SAMBA_ENABLED"
+      value: "true"
+    - key: "FTP_ENABLED"
+      value: "true"
+    - key: "WSDD_ENABLED"
+      value: "true"
+    - key: "API_UPLOADER_ENABLED"
+      value: "false"
+  exposedPorts: ["445", "139", "21", "3702", "5357"]
+  entrypoint: ["/init"]
+
+commandTests:
+  - name: "Samba is installed"
+    command: "smbd"
+    args: ["--version"]
+    expectedOutput: ["Version 4.*"]
+  - name: "vsftpd is installed"
+    command: "vsftpd"
+    args: ["-v"]
+    expectedOutput: ["vsftpd: version .*"]
+  - name: "wsdd is installed"
+    command: "wsdd"
+    args: ["--help"]
+    exitCode: 0
+  - name: "inotifywait is installed"
+    command: "inotifywait"
+    args: ["--help"]
+    exitCode: 1 # help exit code is 1 for inotify-tools
+  - name: "curl is installed"
+    command: "curl"
+    args: ["--version"]
+    expectedOutput: ["curl .*"]
+
+fileExistenceTests:
+  - name: "Consumption directory exists"
+    path: "/consumption"
+    shouldExist: true
+    permissions: "drwxrwxrwx"
+  - name: "Archive directory exists"
+    path: "/archive"
+    shouldExist: true
+    permissions: "drwxrwxrwx"
+  - name: "Samba run script exists"
+    path: "/etc/s6-overlay/s6-rc.d/samba/run"
+    shouldExist: true
+  - name: "FTP run script exists"
+    path: "/etc/s6-overlay/s6-rc.d/vsftpd/run"
+    shouldExist: true
+  - name: "API uploader run script exists"
+    path: "/etc/s6-overlay/s6-rc.d/api-uploader/run"
+    shouldExist: true

@@ -1,0 +1,94 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract service versions
+        id: versions
+        run: |
+          SAMBA_VER=$(docker run --rm alpine:3.19 sh -c "apk add --no-cache samba >/dev/null && smbd --version" | awk '{print $2}')
+          VSFTPD_VER=$(docker run --rm alpine:3.19 sh -c "apk add --no-cache vsftpd >/dev/null && apk list --installed vsftpd" | awk '{print $1}' | sed 's/vsftpd-//')
+          WSDD_VER=$(docker run --rm alpine:3.19 sh -c "apk add --no-cache wsdd >/dev/null && wsdd --version" | head -n 1 | awk -F', v' '{print $2}')
+          echo "samba=$SAMBA_VER" >> $GITHUB_OUTPUT
+          echo "vsftpd=$VSFTPD_VER" >> $GITHUB_OUTPUT
+          echo "wsdd=$WSDD_VER" >> $GITHUB_OUTPUT
+          echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+      - name: Build image for testing
+        uses: docker/build-push-action@v5
+        with:
+          context: uploader
+          load: true
+          tags: uploader:test
+          build-args: |
+            SAMBA_VERSION=${{ steps.versions.outputs.samba }}
+            VSFTPD_VERSION=${{ steps.versions.outputs.vsftpd }}
+            WSDD_VERSION=${{ steps.versions.outputs.wsdd }}
+            BUILD_DATE=${{ steps.versions.outputs.date }}
+            REPO_REF=${{ github.ref_name }}
+            REPO_COMMIT=${{ github.sha }}
+            GITHUB_REPOSITORY=${{ github.repository }}
+
+      - name: Run integration tests
+        run: |
+          # Use docker instead of podman if podman is not available
+          ./tests/run-integration-tests.sh
+
+      - name: Log in to the Container registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        if: github.event_name != 'pull_request'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Build and push final image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v5
+        with:
+          context: uploader
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            SAMBA_VERSION=${{ steps.versions.outputs.samba }}
+            VSFTPD_VERSION=${{ steps.versions.outputs.vsftpd }}
+            WSDD_VERSION=${{ steps.versions.outputs.wsdd }}
+            BUILD_DATE=${{ steps.versions.outputs.date }}
+            REPO_REF=${{ github.ref_name }}
+            REPO_COMMIT=${{ github.sha }}
+            GITHUB_REPOSITORY=${{ github.repository }}

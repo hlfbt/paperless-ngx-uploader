@@ -1,0 +1,34 @@
+services:
+  uploader:
+    build:
+      context: ./uploader
+    container_name: paperless-uploader
+    environment:
+      - SAMBA_ENABLED=true
+      - SAMBA_USER=admin
+      - SAMBA_PASS=password123
+      - FTP_ENABLED=true
+      - FTP_USER=admin
+      - FTP_PASS=password123
+      - WSDD_ENABLED=true
+      - API_UPLOADER_ENABLED=false
+      - API_UPLOADER_ON_SUCCESS=archive # delete or archive
+      - ARCHIVE_DIR=/archive
+      - PAPERLESS_URL=https://paperless.example.com
+      - PAPERLESS_TOKEN=your_token_here
+      - PUID=1000
+      - PGID=1000
+      - CONSUMPTION_DIR=/consumption
+      - PASV_ADDRESS=127.0.0.1  # Change to your host IP for external access
+    volumes:
+      - ./consumption:/consumption
+      - ./archive:/archive
+    ports:
+      - "445:445"
+      - "137-138:137-138/udp"
+      - "139:139"
+      - "21:21"
+      - "21100-21110:21100-21110"
+      - "3702:3702/udp"
+      - "5357:5357"
+    restart: unless-stopped
