@@ -13,6 +13,10 @@ if [ "$FTP_ENABLED" != "true" ]; then
     echo "FTP is disabled in configuration."
 fi
 
+if [ "$WEBDAV_ENABLED" != "true" ]; then
+    echo "WebDAV is disabled in configuration."
+fi
+
 if [ "$WSDD_ENABLED" != "true" ]; then
     echo "WSDD is disabled in configuration."
 fi

@@ -63,10 +63,27 @@ run_test_scenario() {
     echo "Waiting for services to start..."
     sleep 15
 
-    # Trigger upload
+    # Trigger upload via WebDAV
     local test_file="test_document_$scenario.pdf"
-    echo "test content" > "tests/integration-data/consumption/$test_file"
-    echo "Copied $test_file to consumption directory."
+    echo "test content via webdav" > "tests/$test_file"
+    echo "Uploading $test_file via WebDAV..."
+    
+    # Try multiple times since services might still be initializing
+    local max_retries=5
+    local count=0
+    until curl -s -u paperless:paperless --digest -T "tests/$test_file" "http://localhost:8081/$test_file" || [ $count -eq $max_retries ]; do
+        echo "WebDAV not ready, retrying..."
+        sleep 5
+        count=$((count+1))
+    done
+
+    if [ $count -eq $max_retries ]; then
+        echo -e "${RED}FAIL: WebDAV upload failed after $max_retries retries.${NC}"
+        $COMPOSE_CMD -f tests/docker-compose.test.yml logs uploader
+        exit 1
+    fi
+    echo "Successfully uploaded $test_file via WebDAV."
+    rm "tests/$test_file"
 
     # Wait for processing
     echo "Waiting for processing..."

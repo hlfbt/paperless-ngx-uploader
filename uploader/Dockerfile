@@ -7,19 +7,21 @@ ARG S6_OVERLAY_VERSION=3.2.2.0
 ARG SAMBA_VERSION="unknown"
 ARG VSFTPD_VERSION="unknown"
 ARG WSDD_VERSION="unknown"
+ARG LIGHTTPD_VERSION="unknown"
 ARG BUILD_DATE="unknown"
 ARG REPO_REF="unknown"
 ARG REPO_COMMIT="unknown"
 ARG GITHUB_REPOSITORY="unknown"
 
 LABEL org.opencontainers.image.title="Paperless-NGX Uploader" \
-      org.opencontainers.image.description="Paperless-NGX Uploader (Samba ${SAMBA_VERSION}, vsftpd ${VSFTPD_VERSION}, wsdd ${WSDD_VERSION}) - ${REPO_REF}@${REPO_COMMIT}" \
+      org.opencontainers.image.description="Paperless-NGX Uploader (Samba ${SAMBA_VERSION}, vsftpd ${VSFTPD_VERSION}, wsdd ${WSDD_VERSION}, WebDAV ${LIGHTTPD_VERSION}) - ${REPO_REF}@${REPO_COMMIT}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${REPO_COMMIT}" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
       com.paperless_uploader.samba_version="${SAMBA_VERSION}" \
       com.paperless_uploader.vsftpd_version="${VSFTPD_VERSION}" \
-      com.paperless_uploader.wsdd_version="${WSDD_VERSION}"
+      com.paperless_uploader.wsdd_version="${WSDD_VERSION}" \
+      com.paperless_uploader.lighttpd_version="${LIGHTTPD_VERSION}"
 
 # Install necessary packages for extraction and initial setup
 RUN apk add --no-cache curl tar xz
@@ -33,6 +35,10 @@ RUN apk add --no-cache \
     samba \
     vsftpd \
     wsdd \
+    lighttpd \
+    lighttpd-mod_webdav \
+    lighttpd-mod_auth \
+    sqlite \
     bash \
     shadow \
     inotify-tools
@@ -51,6 +57,10 @@ ENV SAMBA_ENABLED=true \
     FTP_ENABLED=true \
     FTP_USER=paperless \
     FTP_PASS=paperless \
+    WEBDAV_ENABLED=true \
+    WEBDAV_USER=paperless \
+    WEBDAV_PASS=paperless \
+    WEBDAV_PORT=8080 \
     WSDD_ENABLED=true \
     API_UPLOADER_ENABLED=false \
     API_UPLOADER_ON_SUCCESS=delete \
@@ -67,7 +77,8 @@ ENV SAMBA_ENABLED=true \
 # Expose ports
 # Samba: 445 (TCP), 137/138 (UDP), 139 (TCP)
 # FTP: 21 (TCP), 21100-21110 (TCP for passive mode)
+# WebDAV: 8080 (TCP)
 # WSDD: 3702 (UDP), 5357 (TCP)
-EXPOSE 445/tcp 137/udp 138/udp 139/tcp 21/tcp 21100-21110/tcp 3702/udp 5357/tcp
+EXPOSE 445/tcp 137/udp 138/udp 139/tcp 21/tcp 21100-21110/tcp 8080/tcp 3702/udp 5357/tcp
 
 ENTRYPOINT ["/init"]
