@@ -1,4 +1,4 @@
-#!/command/with-contenv /bin/bash
+#!/bin/bash
 
 # Set PUID/PGID
 PUID=${PUID:-1000}

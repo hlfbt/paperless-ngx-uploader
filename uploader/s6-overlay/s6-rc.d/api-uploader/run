@@ -1,67 +1,15 @@
 #!/command/with-contenv /bin/bash
-if [ "$API_UPLOADER_ENABLED" != "true" ]; then
-    echo "API Uploader is disabled. Exiting."
-    exit 0
-fi
 
-echo "Starting API Uploader monitoring $CONSUMPTION_DIR..."
+# Call the shared api-uploader script
+/etc/cont-init.d/05-api-uploader.sh
 
-upload_file() {
-    local file_path="$1"
-    local file_name=$(basename "$file_path")
-    
-    # Skip hidden files
-    if [[ "$file_name" == .* ]]; then
-        return
-    fi
-
-    echo "Uploading $file_name to $PAPERLESS_URL..."
-    
-    # Perform upload
-    response=$(curl -s -L -f -H "Authorization: Token $PAPERLESS_TOKEN"          -F "document=@$file_path"          "${PAPERLESS_URL}api/documents/post_document/")
-    
-    local exit_code=$?
-    if [ $exit_code -eq 0 ]; then
-        if [ "$API_UPLOADER_ON_SUCCESS" = "archive" ]; then
-            local dest_path="$ARCHIVE_DIR/$(date +%Y-%m-%d_%H-%M-%S)_$file_name"
-            echo "Successfully uploaded $file_name. Moving to $dest_path."
-            mv "$file_path" "$dest_path"
-        else
-            echo "Successfully uploaded $file_name. Deleting local copy."
-            rm "$file_path"
-        fi
-    else
-        echo "Failed to upload $file_name (exit code: $exit_code). Will retry on next scan or change."
-        echo "Response: $response"
-    fi
-}
-
-# Initial scan for existing files
-echo "Performing initial scan of $CONSUMPTION_DIR..."
-find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do
-    upload_file "$file"
-done
-
+# If in oneshot mode, the above script will exit 0. 
+# In that case, we trigger a halt for s6-overlay.
 if [ "$API_UPLOADER_ONESHOT" = "true" ]; then
     echo "Oneshot mode: finished initial scan. Exiting container..."
-    # Shutdown the container in s6-overlay v3
-    # /run/s6/basedir/bin/halt is the correct way to trigger a graceful shutdown
     if [ -f /run/s6/basedir/bin/halt ]; then
         /run/s6/basedir/bin/halt
     else
-        # Fallback for other environments or if path is different
         kill 1
     fi
-    exit 0
 fi
-
-# Monitor for new files using inotifywait
-echo "Setting up inotify watches on $CONSUMPTION_DIR..."
-exec inotifywait -m -e close_write -e moved_to --format '%w%f' "$CONSUMPTION_DIR" | while read -r file; do
-    echo "Detected change on $file"
-    if [ -f "$file" ]; then
-        # Small delay to ensure file is fully written/settled
-        sleep 1
-        upload_file "$file"
-    fi
-done

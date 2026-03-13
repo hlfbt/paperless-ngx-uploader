@@ -1,4 +1,4 @@
-#!/command/with-contenv /bin/bash
+#!/bin/bash
 
 if [ "$SAMBA_ENABLED" != "true" ]; then
     echo "Samba is disabled."

@@ -12,7 +12,17 @@ This Docker image provides an automatic file uploader for `paperless-ngx` via Sa
 - **Fully Configurable**: All services can be enabled/disabled and configured via environment variables.
 - **Permissions Support**: Handles `PUID` and `PGID` to match your host system's user permissions.
 
-## Environment Variables
+## Image Flavors
+
+The image is available in two flavors:
+
+- `full` (default): Contains all services (Samba, FTP, WebDAV, API Uploader) and is managed by `s6-overlay`.
+- `lightweight`: Minimal image containing only the API Uploader and its dependencies (inotify-tools, curl). Does not include `s6-overlay`.
+
+To build a specific flavor:
+```bash
+docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
+```
 
 | Variable | Default | Description |
 |----------|---------|-------------|

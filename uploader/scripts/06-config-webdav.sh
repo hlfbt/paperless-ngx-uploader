@@ -1,4 +1,4 @@
-#!/command/with-contenv /bin/bash
+#!/bin/bash
 
 if [ "$WEBDAV_ENABLED" != "true" ]; then
     echo "WebDAV is disabled."
