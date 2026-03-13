@@ -5,8 +5,10 @@ This Docker image provides an automatic file uploader for `paperless-ngx` via Sa
 ## Features
 - **Samba (SMB) Server**: Standard network share for easy drag-and-drop.
 - **FTP Server**: Legacy and automated file transfer support.
+- **WebDAV Server**: Modern HTTP-based file transfer support (port 8080).
 - **Windows Discovery (WSDD)**: Ensures the share shows up in Windows Explorer.
 - **API Uploader**: Automatically monitors the consumption directory and uploads files to a remote Paperless-ngx instance via API.
+- **Oneshot Mode**: Option to run a single scan and exit, perfect for scheduled tasks.
 - **Fully Configurable**: All services can be enabled/disabled and configured via environment variables.
 - **Permissions Support**: Handles `PUID` and `PGID` to match your host system's user permissions.
 
@@ -20,12 +22,17 @@ This Docker image provides an automatic file uploader for `paperless-ngx` via Sa
 | `FTP_ENABLED` | `true` | Set to `false` to disable FTP. |
 | `FTP_USER` | `paperless` | Username for FTP. |
 | `FTP_PASS` | `paperless` | Password for FTP. |
+| `WEBDAV_ENABLED` | `true` | Set to `false` to disable WebDAV. |
+| `WEBDAV_USER` | `paperless` | Username for WebDAV (Digest Auth). |
+| `WEBDAV_PASS` | `paperless` | Password for WebDAV. |
+| `WEBDAV_PORT` | `8080` | Port for WebDAV server. |
 | `PASV_ADDRESS` | | Host IP for FTP passive mode. Required if behind NAT. |
 | `PASV_MIN_PORT` | `21100` | Start of passive port range. |
 | `PASV_MAX_PORT` | `21110` | End of passive port range. |
 | `WSDD_ENABLED` | `true` | Set to `false` to disable Windows Discovery. |
 | `API_UPLOADER_ENABLED` | `false` | Set to `true` to enable the API uploader. |
 | `API_UPLOADER_ON_SUCCESS` | `delete` | Action after success: `delete` or `archive`. |
+| `API_UPLOADER_ONESHOT` | `false` | If `true`, the container will exit after a single scan. |
 | `ARCHIVE_DIR` | `/archive` | Path to store archived files if `archive` is selected. |
 | `PAPERLESS_URL` | | URL of your Paperless-ngx instance (e.g., `https://paperless.example.com`). |
 | `PAPERLESS_TOKEN` | | API Token from your Paperless profile. |

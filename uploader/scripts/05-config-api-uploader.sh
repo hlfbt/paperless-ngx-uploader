@@ -19,4 +19,8 @@ if [[ ! "$PAPERLESS_URL" == */ ]]; then
     export PAPERLESS_URL="${PAPERLESS_URL}/"
 fi
 
-echo "API Uploader configured for $PAPERLESS_URL"
+if [ "$API_UPLOADER_ONESHOT" = "true" ]; then
+    echo "API Uploader configured for $PAPERLESS_URL (Oneshot mode enabled)"
+else
+    echo "API Uploader configured for $PAPERLESS_URL"
+fi

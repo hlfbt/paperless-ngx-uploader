@@ -64,6 +64,7 @@ ENV SAMBA_ENABLED=true \
     WSDD_ENABLED=true \
     API_UPLOADER_ENABLED=false \
     API_UPLOADER_ON_SUCCESS=delete \
+    API_UPLOADER_ONESHOT=false \
     ARCHIVE_DIR=/archive \
     PAPERLESS_URL= \
     PAPERLESS_TOKEN= \

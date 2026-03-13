@@ -42,6 +42,19 @@ find "$CONSUMPTION_DIR" -maxdepth 1 -type f | while read -r file; do
     upload_file "$file"
 done
 
+if [ "$API_UPLOADER_ONESHOT" = "true" ]; then
+    echo "Oneshot mode: finished initial scan. Exiting container..."
+    # Shutdown the container in s6-overlay v3
+    # /run/s6/basedir/bin/halt is the correct way to trigger a graceful shutdown
+    if [ -f /run/s6/basedir/bin/halt ]; then
+        /run/s6/basedir/bin/halt
+    else
+        # Fallback for other environments or if path is different
+        kill 1
+    fi
+    exit 0
+fi
+
 # Monitor for new files using inotifywait
 echo "Setting up inotify watches on $CONSUMPTION_DIR..."
 exec inotifywait -m -e close_write -e moved_to --format '%w%f' "$CONSUMPTION_DIR" | while read -r file; do
