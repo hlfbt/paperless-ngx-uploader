@@ -1,6 +1,6 @@
 # Paperless-NGX Uploader
 
-This Docker image provides an automatic file uploader for `paperless-ngx` via Samba and FTP. It's designed to be a single container running multiple services managed by `s6-overlay`.
+This Docker image provides an automatic file uploader for `paperless-ngx` via Samba, FTP, and WebDAV, as well as an API-based uploader for remote instances. It's designed to be a single container running multiple services managed by `s6-overlay`.
 
 ## Features
 - **Samba (SMB) Server**: Standard network share for easy drag-and-drop.
@@ -24,31 +24,31 @@ To build a specific flavor:
 docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
 ```
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SAMBA_ENABLED` | `true` | Set to `false` to disable Samba. |
-| `SAMBA_USER` | `paperless` | Username for Samba. |
-| `SAMBA_PASS` | `paperless` | Password for Samba. |
-| `FTP_ENABLED` | `true` | Set to `false` to disable FTP. |
-| `FTP_USER` | `paperless` | Username for FTP. |
-| `FTP_PASS` | `paperless` | Password for FTP. |
-| `WEBDAV_ENABLED` | `true` | Set to `false` to disable WebDAV. |
-| `WEBDAV_USER` | `paperless` | Username for WebDAV (Digest Auth). |
-| `WEBDAV_PASS` | `paperless` | Password for WebDAV. |
-| `WEBDAV_PORT` | `8080` | Port for WebDAV server. |
-| `PASV_ADDRESS` | | Host IP for FTP passive mode. Required if behind NAT. |
-| `PASV_MIN_PORT` | `21100` | Start of passive port range. |
-| `PASV_MAX_PORT` | `21110` | End of passive port range. |
-| `WSDD_ENABLED` | `true` | Set to `false` to disable Windows Discovery. |
-| `API_UPLOADER_ENABLED` | `false` | Set to `true` to enable the API uploader. |
-| `API_UPLOADER_ON_SUCCESS` | `delete` | Action after success: `delete` or `archive`. |
-| `API_UPLOADER_ONESHOT` | `false` | If `true`, the container will exit after a single scan. |
-| `ARCHIVE_DIR` | `/archive` | Path to store archived files if `archive` is selected. |
-| `PAPERLESS_URL` | | URL of your Paperless-ngx instance (e.g., `https://paperless.example.com`). |
-| `PAPERLESS_TOKEN` | | API Token from your Paperless profile. |
-| `PUID` | `1000` | User ID for file ownership. |
-| `PGID` | `1000` | Group ID for file ownership. |
-| `CONSUMPTION_DIR` | `/consumption` | Path inside container where files go. |
+| Variable | Default | Description | Lightweight |
+|----------|---------|-------------|-------------|
+| `SAMBA_ENABLED` | `true` | Set to `false` to disable Samba. | No |
+| `SAMBA_USER` | `paperless` | Username for Samba. | No |
+| `SAMBA_PASS` | `paperless` | Password for Samba. | No |
+| `FTP_ENABLED` | `true` | Set to `false` to disable FTP. | No |
+| `FTP_USER` | `paperless` | Username for FTP. | No |
+| `FTP_PASS` | `paperless` | Password for FTP. | No |
+| `WEBDAV_ENABLED` | `true` | Set to `false` to disable WebDAV. | No |
+| `WEBDAV_USER` | `paperless` | Username for WebDAV (Digest Auth). | No |
+| `WEBDAV_PASS` | `paperless` | Password for WebDAV. | No |
+| `WEBDAV_PORT` | `8080` | Port for WebDAV server. | No |
+| `PASV_ADDRESS` | | Host IP for FTP passive mode. Required if behind NAT. | No |
+| `PASV_MIN_PORT` | `21100` | Start of passive port range. | No |
+| `PASV_MAX_PORT` | `21110` | End of passive port range. | No |
+| `WSDD_ENABLED` | `true` | Set to `false` to disable Windows Discovery. | No |
+| `API_UPLOADER_ENABLED` | `false` | Set to `true` to enable the API uploader. | **Yes** |
+| `API_UPLOADER_ON_SUCCESS` | `delete` | Action after success: `delete`, `archive`, or `none`. | **Yes** |
+| `API_UPLOADER_ONESHOT` | `false` | If `true`, the container will exit after a single scan. | **Yes** |
+| `ARCHIVE_DIR` | `/archive` | Path to store archived files if `archive` is selected. | **Yes** |
+| `PAPERLESS_URL` | | URL of your Paperless-ngx instance (e.g., `https://paperless.example.com`). | **Yes** |
+| `PAPERLESS_TOKEN` | | API Token from your Paperless profile. | **Yes** |
+| `PUID` | `1000` | User ID for file ownership. | **Yes** |
+| `PGID` | `1000` | Group ID for file ownership. | **Yes** |
+| `CONSUMPTION_DIR` | `/consumption` | Path inside container where files go. | **Yes** |
 
 ## Quick Start with Docker Compose
 
@@ -57,12 +57,44 @@ docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
    ```bash
    docker-compose up -d
    ```
-3. Your Samba share will be available at `\\<host-ip>\paperless`.
-4. Your FTP server will be available at `ftp://<host-ip>:21`.
+3. Your services will be available at:
+   - **Samba**: `\\<host-ip>\paperless`
+   - **FTP**: `ftp://<host-ip>:21`
+   - **WebDAV**: `http://<host-ip>:8080`
+
+## Quick Start with Docker Run
+
+### Run all services
+```bash
+docker run -d \
+  --name uploader \
+  -v /path/to/consume:/consumption \
+  -p 137-139:137-139/udp \
+  -p 445:445 \
+  -p 21:21 \
+  -p 21100-21110:21100-21110 \
+  -p 8080:8080 \
+  -e SAMBA_PASS=yourpassword \
+  -e FTP_PASS=yourpassword \
+  ghcr.io/youruser/paperless-ngx-uploader:latest
+```
+
+### Run as a one-shot uploader (Lightweight)
+This example scans a local directory, uploads everything to the Paperless-ngx API, and exits:
+```bash
+docker run --rm \
+  -v /path/to/docs:/consumption \
+  -e API_UPLOADER_ENABLED=true \
+  -e API_UPLOADER_ONESHOT=true \
+  -e PAPERLESS_URL=https://paperless.example.com \
+  -e PAPERLESS_TOKEN=your_token_here \
+  ghcr.io/youruser/paperless-ngx-uploader:lightweight
+```
 
 ## Integration with Paperless-NGX
 
-Mount the same host directory to both this uploader's `/consumption` and `paperless-ngx`'s `PAPERLESS_CONSUMPTION_DIR`.
+### Method 1: Local Shared Volume
+Mount the same host directory to both this uploader's `/consumption` and `paperless-ngx`'s `PAPERLESS_CONSUMPTION_DIR`. This is the most efficient method for local setups.
 
 ```yaml
 services:
@@ -75,6 +107,21 @@ services:
     # ...
     volumes:
       - /mnt/paperless/consume:/usr/src/paperless/consume
+```
+
+### Method 2: API Upload (Remote or Isolated)
+Enable the API Uploader to have this container push files to Paperless-ngx via the REST API. This is useful if the containers are on different hosts or if you don't want to manage shared volume permissions.
+
+```yaml
+services:
+  uploader:
+    # ...
+    environment:
+      - API_UPLOADER_ENABLED=true
+      - PAPERLESS_URL=http://paperless-ngx:8000
+      - PAPERLESS_TOKEN=your_api_token
+    volumes:
+      - /mnt/paperless/consume:/consumption
 ```
 
 ## Testing

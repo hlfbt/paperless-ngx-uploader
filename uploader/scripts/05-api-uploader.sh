@@ -48,6 +48,8 @@ upload_file() {
             local dest_path="$ARCHIVE_DIR/$(date +%Y-%m-%d_%H-%M-%S)_$file_name"
             echo "Successfully uploaded $file_name. Moving to $dest_path."
             mv "$file_path" "$dest_path"
+        elif [ "$API_UPLOADER_ON_SUCCESS" = "none" ]; then
+            echo "Successfully uploaded $file_name. Leaving file in place (none mode)."
         else
             echo "Successfully uploaded $file_name. Deleting local copy."
             rm "$file_path"
