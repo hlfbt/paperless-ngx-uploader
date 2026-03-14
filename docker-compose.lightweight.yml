@@ -1,0 +1,17 @@
+# Example docker file to run the inotify file watcher on the current directory, uploading any new files and moving them to the archive subdirectory.
+
+services:
+  uploader:
+    build:
+      context: ./uploader
+      args:
+        - FLAVOR=lightweight
+    container_name: paperless-uploader
+    environment:
+      - API_UPLOADER_ON_SUCCESS=archive # delete, archive or none
+      - PAPERLESS_URL=https://paperless.example.com
+      - PAPERLESS_TOKEN=your_token_here
+    volumes:
+      - ./:/consumption
+      - ./archive:/archive
+    restart: unless-stopped

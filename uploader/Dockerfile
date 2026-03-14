@@ -20,16 +20,17 @@ RUN apk add --no-cache \
     shadow \
     inotify-tools \
     curl \
-    tar \
-    xz \
     findutils
 
-# Create consumption directory
-RUN mkdir -p /consumption && chmod 777 /consumption
+# Create default consumption and archive directories
+RUN mkdir -p /consumption /archive \
+    chmod -R 775 /consumption /archive
 
 # Copy and prepare scripts
-COPY scripts/ /etc/cont-init.d/
-RUN chmod +x /etc/cont-init.d/*.sh
+COPY bin/ /usr/local/bin/
+
+# Copy s6-overlay configuration (some scripts are required in both flavors)
+COPY s6-overlay/ /etc/s6-overlay/
 
 # Set environment variables with defaults
 ENV SAMBA_ENABLED=true \
@@ -43,22 +44,23 @@ ENV SAMBA_ENABLED=true \
     WEBDAV_PASS=paperless \
     WEBDAV_PORT=8080 \
     WSDD_ENABLED=true \
-    API_UPLOADER_ENABLED=false \
+    API_UPLOADER_ENABLED=true \
     API_UPLOADER_ON_SUCCESS=delete \
     API_UPLOADER_ONESHOT=false \
-    ARCHIVE_DIR=/archive \
     PAPERLESS_URL= \
     PAPERLESS_TOKEN= \
     PUID=1000 \
     PGID=1000 \
-    CONSUMPTION_DIR=/consumption \
     PASV_ADDRESS= \
     PASV_MIN_PORT=21100 \
     PASV_MAX_PORT=21110 \
+    CONSUMPTION_DIR=/consumption \
+    ARCHIVE_DIR=/archive \
+    CONSUMPTION_FILTER= \
     FLAVOR=${FLAVOR}
 
 
-# Stage 2a: Flavor-full (Samba, FTP, WebDAV, WSDD + s6-overlay)
+# Stage 2a: Flavor-full (Samba, FTP, WebDAV, WSDD, orchestrated with s6-overlay)
 FROM base AS flavor-full
 ARG SAMBA_VERSION
 ARG VSFTPD_VERSION
@@ -83,6 +85,8 @@ LABEL org.opencontainers.image.title="Paperless-NGX Uploader (Full)" \
 
 # Install full toolset packages and s6-overlay
 RUN apk add --no-cache \
+        tar \
+        xz \
         samba \
         vsftpd \
         wsdd \
@@ -93,8 +97,8 @@ RUN apk add --no-cache \
     curl -L -s https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz | tar -Jxpf - -C / && \
     curl -L -s https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz | tar -Jxpf - -C /
 
-# Copy s6-overlay configuration
-COPY s6-overlay/ /etc/s6-overlay/
+# Add s6-overlay stage 2 hook that dynamically configures the s6 services
+ENV S6_STAGE2_HOOK=/etc/s6-overlay/stage2-hook.sh
 
 # Expose ports for Samba, FTP, WebDAV, and WSDD
 EXPOSE 445/tcp 137/udp 138/udp 139/tcp 21/tcp 21100-21110/tcp 8080/tcp 3702/udp 5357/tcp
@@ -118,7 +122,7 @@ LABEL org.opencontainers.image.title="Paperless-NGX Uploader (Lightweight)" \
       com.paperless_uploader.flavor="lightweight"
 
 # Set ENTRYPOINT to the lightweight entrypoint script
-ENTRYPOINT ["/etc/cont-init.d/entrypoint-lightweight.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint-lightweight.sh"]
 
 
 # Stage 3: Final image selection based on FLAVOR argument

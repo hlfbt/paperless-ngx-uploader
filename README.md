@@ -17,7 +17,7 @@ This Docker image provides an automatic file uploader for `paperless-ngx` via Sa
 The image is available in two flavors:
 
 - `full` (default): Contains all services (Samba, FTP, WebDAV, API Uploader) and is managed by `s6-overlay`.
-- `lightweight`: Minimal image containing only the API Uploader and its dependencies (inotify-tools, curl). Does not include `s6-overlay`.
+- `lightweight`: Minimal image containing only the API Uploader and its dependencies (inotify-tools, curl). Does not include `s6-overlay` or any services.
 
 To build a specific flavor:
 ```bash
@@ -26,29 +26,30 @@ docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
 
 | Variable | Default | Description | Lightweight |
 |----------|---------|-------------|-------------|
-| `SAMBA_ENABLED` | `true` | Set to `false` to disable Samba. | No |
-| `SAMBA_USER` | `paperless` | Username for Samba. | No |
-| `SAMBA_PASS` | `paperless` | Password for Samba. | No |
-| `FTP_ENABLED` | `true` | Set to `false` to disable FTP. | No |
-| `FTP_USER` | `paperless` | Username for FTP. | No |
-| `FTP_PASS` | `paperless` | Password for FTP. | No |
-| `WEBDAV_ENABLED` | `true` | Set to `false` to disable WebDAV. | No |
-| `WEBDAV_USER` | `paperless` | Username for WebDAV (Digest Auth). | No |
-| `WEBDAV_PASS` | `paperless` | Password for WebDAV. | No |
-| `WEBDAV_PORT` | `8080` | Port for WebDAV server. | No |
-| `PASV_ADDRESS` | | Host IP for FTP passive mode. Required if behind NAT. | No |
-| `PASV_MIN_PORT` | `21100` | Start of passive port range. | No |
-| `PASV_MAX_PORT` | `21110` | End of passive port range. | No |
-| `WSDD_ENABLED` | `true` | Set to `false` to disable Windows Discovery. | No |
-| `API_UPLOADER_ENABLED` | `false` | Set to `true` to enable the API uploader. | **Yes** |
-| `API_UPLOADER_ON_SUCCESS` | `delete` | Action after success: `delete`, `archive`, or `none`. | **Yes** |
-| `API_UPLOADER_ONESHOT` | `false` | If `true`, the container will exit after a single scan. | **Yes** |
-| `ARCHIVE_DIR` | `/archive` | Path to store archived files if `archive` is selected. | **Yes** |
-| `PAPERLESS_URL` | | URL of your Paperless-ngx instance (e.g., `https://paperless.example.com`). | **Yes** |
-| `PAPERLESS_TOKEN` | | API Token from your Paperless profile. | **Yes** |
-| `PUID` | `1000` | User ID for file ownership. | **Yes** |
-| `PGID` | `1000` | Group ID for file ownership. | **Yes** |
-| `CONSUMPTION_DIR` | `/consumption` | Path inside container where files go. | **Yes** |
+| `SAMBA_ENABLED` | `true` | Set to `false` to disable Samba (also disables WSDD). | |
+| `SAMBA_USER` | `paperless` | Username for Samba. | |
+| `SAMBA_PASS` | `paperless` | Password for Samba. | |
+| `FTP_ENABLED` | `true` | Set to `false` to disable FTP. | |
+| `FTP_USER` | `paperless` | Username for FTP. | |
+| `FTP_PASS` | `paperless` | Password for FTP. | |
+| `WEBDAV_ENABLED` | `true` | Set to `false` to disable WebDAV. | |
+| `WEBDAV_USER` | `paperless` | Username for WebDAV (Digest Auth). | |
+| `WEBDAV_PASS` | `paperless` | Password for WebDAV. | |
+| `WEBDAV_PORT` | `8080` | Port for WebDAV server. | |
+| `PASV_ADDRESS` | | Host IP for FTP passive mode. Required if behind NAT. | |
+| `PASV_MIN_PORT` | `21100` | Start of passive port range. | |
+| `PASV_MAX_PORT` | `21110` | End of passive port range. | |
+| `WSDD_ENABLED` | `true` | Set to `false` to disable Windows Discovery. | |
+| `API_UPLOADER_ENABLED` | `true` | Set to `false` to disable the Paperless API uploader. Note: has no effect in lightweight flavor. | |
+| `API_UPLOADER_ON_SUCCESS` | `delete` | Action after success: `delete`, `archive`, or `none`. | ✔ |
+| `API_UPLOADER_ONESHOT` | `false` | If `true`, the container will exit after a single scan. | ✔ |
+| `PAPERLESS_URL` | | URL of your Paperless-ngx instance (e.g., `https://paperless.example.com`). | ✔ |
+| `PAPERLESS_TOKEN` | | API Token from your Paperless profile. | ✔ |
+| `PUID` | `1000` | User ID for file ownership. | ✔ |
+| `PGID` | `1000` | Group ID for file ownership. | ✔ |
+| `CONSUMPTION_DIR` | `/consumption` | Path inside container where files go. | ✔ |
+| `ARCHIVE_DIR` | `/archive` | Path to store archived files if `archive` action is selected. | ✔ |
+| `CONSUMPTION_FILTER` | | Regular Expression to filter consumed files. Files not matching the filter will be skipped. Not: hidden files (starting with a `.`) are always skipped. | ✔ |
 
 ## Quick Start with Docker Compose
 
@@ -58,7 +59,7 @@ docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
    docker-compose up -d
    ```
 3. Your services will be available at:
-   - **Samba**: `\\<host-ip>\paperless`
+   - **Samba**: `\\<host-ip>\paperless` / `smb://<host-ip>/paperless`
    - **FTP**: `ftp://<host-ip>:21`
    - **WebDAV**: `http://<host-ip>:8080`
 
@@ -76,7 +77,7 @@ docker run -d \
   -p 8080:8080 \
   -e SAMBA_PASS=yourpassword \
   -e FTP_PASS=yourpassword \
-  ghcr.io/youruser/paperless-ngx-uploader:latest
+  ghcr.io/hlfbt/paperless-ngx-uploader:latest
 ```
 
 ### Run as a one-shot uploader (Lightweight)
@@ -84,11 +85,10 @@ This example scans a local directory, uploads everything to the Paperless-ngx AP
 ```bash
 docker run --rm \
   -v /path/to/docs:/consumption \
-  -e API_UPLOADER_ENABLED=true \
   -e API_UPLOADER_ONESHOT=true \
   -e PAPERLESS_URL=https://paperless.example.com \
   -e PAPERLESS_TOKEN=your_token_here \
-  ghcr.io/youruser/paperless-ngx-uploader:lightweight
+  ghcr.io/hlfbt/paperless-ngx-uploader:lightweight
 ```
 
 ## Integration with Paperless-NGX
@@ -117,7 +117,6 @@ services:
   uploader:
     # ...
     environment:
-      - API_UPLOADER_ENABLED=true
       - PAPERLESS_URL=http://paperless-ngx:8000
       - PAPERLESS_TOKEN=your_api_token
     volumes:

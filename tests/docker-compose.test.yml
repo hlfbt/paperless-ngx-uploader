@@ -1,6 +1,8 @@
 services:
   uploader:
     image: localhost/uploader:test
+    # Overwrite entrypoint for manual debugging
+    # entrypoint: ["/bin/bash", "-c", "sleep infinity"]
     environment:
       - SAMBA_ENABLED=false # Simplify for integration test
       - FTP_ENABLED=false
