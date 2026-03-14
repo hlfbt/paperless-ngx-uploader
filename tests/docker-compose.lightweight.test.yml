@@ -6,8 +6,8 @@ services:
       - API_UPLOADER_ON_SUCCESS=${API_UPLOADER_ON_SUCCESS:-delete}
       - PAPERLESS_URL=http://mock-api:8080
       - PAPERLESS_TOKEN=test-token
-      - PUID=1000
-      - PGID=1000
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - CONSUMPTION_DIR=/consumption
       - ARCHIVE_DIR=/archive
     volumes:

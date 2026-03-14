@@ -34,6 +34,10 @@ fi
 echo -e "${GREEN}Using binary: $DOCKER_BIN${NC}"
 echo -e "${GREEN}Using compose: $COMPOSE_CMD${NC}"
 
+# Export PUID/PGID to match host user for permission consistency in volumes
+export PUID=$(id -u)
+export PGID=$(id -g)
+
 # Optional build
 if [ "$1" == "--build" ]; then
     echo -e "${GREEN}Building full flavor as localhost/uploader:full-test...${NC}"
@@ -58,7 +62,7 @@ run_lightweight_test() {
     
     # Wait for services
     echo "Waiting for services to start..."
-    sleep 5
+    sleep 2
 
     local test_file="lightweight_doc_$scenario.pdf"
     echo "test content for $scenario" > "tests/integration-data/consumption/$test_file"
@@ -66,7 +70,7 @@ run_lightweight_test() {
 
     # Wait for processing
     echo "Waiting for processing..."
-    sleep 10
+    sleep 5
 
     # Verify Mock API received the file
     echo "Verifying API received the file..."
@@ -116,7 +120,7 @@ run_full_smoke_test() {
     
     # Wait and check health
     echo "Waiting for full flavor to start..."
-    sleep 15
+    sleep 10
 
     # Check if container is still running
     if [ "$( $DOCKER_BIN inspect -f '{{.State.Running}}' paperless-uploader-full-test 2>/dev/null )" == "true" ]; then
