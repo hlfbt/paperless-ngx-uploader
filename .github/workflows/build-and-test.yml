@@ -12,8 +12,25 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run integration tests
+        run: |
+          ./tests/run-integration-tests.sh --build
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    strategy:
+      matrix:
+        flavor: [full, lightweight]
     permissions:
       contents: read
       packages: write
@@ -36,28 +53,7 @@ jobs:
           echo "wsdd=$WSDD_VER" >> $GITHUB_OUTPUT
           echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
-      - name: Build image for testing
-        uses: docker/build-push-action@v5
-        with:
-          context: uploader
-          load: true
-          tags: localhost/uploader:test
-          build-args: |
-            SAMBA_VERSION=${{ steps.versions.outputs.samba }}
-            VSFTPD_VERSION=${{ steps.versions.outputs.vsftpd }}
-            WSDD_VERSION=${{ steps.versions.outputs.wsdd }}
-            BUILD_DATE=${{ steps.versions.outputs.date }}
-            REPO_REF=${{ github.ref_name }}
-            REPO_COMMIT=${{ github.sha }}
-            GITHUB_REPOSITORY=${{ github.repository }}
-
-      - name: Run integration tests
-        run: |
-          # Use docker instead of podman if podman is not available
-          ./tests/run-integration-tests.sh
-
       - name: Log in to the Container registry
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -65,19 +61,20 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
-        if: github.event_name != 'pull_request'
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=false
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=sha
+            type=raw,value=latest,enable=${{ matrix.flavor == 'full' }}
+            type=raw,value=${{ matrix.flavor }},enable=true
+            type=ref,event=branch,suffix=-${{ matrix.flavor }}
+            type=semver,pattern={{version}},suffix=-${{ matrix.flavor }}
+            type=sha,suffix=-${{ matrix.flavor }}
 
       - name: Build and push final image
-        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v5
         with:
           context: uploader
@@ -85,6 +82,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
+            FLAVOR=${{ matrix.flavor }}
             SAMBA_VERSION=${{ steps.versions.outputs.samba }}
             VSFTPD_VERSION=${{ steps.versions.outputs.vsftpd }}
             WSDD_VERSION=${{ steps.versions.outputs.wsdd }}
