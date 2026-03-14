@@ -1,0 +1,25 @@
+services:
+  uploader:
+    image: localhost/uploader:lightweight-test
+    container_name: paperless-uploader-lightweight-test
+    environment:
+      - API_UPLOADER_ON_SUCCESS=${API_UPLOADER_ON_SUCCESS:-delete}
+      - PAPERLESS_URL=http://mock-api:8080
+      - PAPERLESS_TOKEN=test-token
+      - PUID=1000
+      - PGID=1000
+      - CONSUMPTION_DIR=/consumption
+      - ARCHIVE_DIR=/archive
+    volumes:
+      - ./integration-data/consumption:/consumption
+      - ./integration-data/archive:/archive
+    depends_on:
+      - mock-api
+
+  mock-api:
+    image: python:3.11-alpine
+    command: python /app/server.py
+    volumes:
+      - ./mock-api/server.py:/app/server.py
+    ports:
+      - "8080:8080"

@@ -9,8 +9,8 @@ metadataTest:
     - key: "WSDD_ENABLED"
       value: "true"
     - key: "API_UPLOADER_ENABLED"
-      value: "false"
-  exposedPorts: ["445", "139", "21", "3702", "5357"]
+      value: "true"
+  exposedPorts: ["445", "137", "138", "139", "21", "21100-21110", "8080", "3702", "5357"]
   entrypoint: ["/init"]
 
 commandTests:
@@ -39,17 +39,17 @@ fileExistenceTests:
   - name: "Consumption directory exists"
     path: "/consumption"
     shouldExist: true
-    permissions: "drwxrwxrwx"
+    permissions: "drwxrwxr-x"
   - name: "Archive directory exists"
     path: "/archive"
     shouldExist: true
-    permissions: "drwxrwxrwx"
+    permissions: "drwxrwxr-x"
   - name: "Samba run script exists"
     path: "/etc/s6-overlay/s6-rc.d/samba/run"
     shouldExist: true
   - name: "FTP run script exists"
     path: "/etc/s6-overlay/s6-rc.d/vsftpd/run"
     shouldExist: true
-  - name: "API uploader run script exists"
-    path: "/etc/s6-overlay/s6-rc.d/api-uploader/run"
+  - name: "Paperless API uploader run script exists"
+    path: "/etc/s6-overlay/s6-rc.d/paperless-uploader/run"
     shouldExist: true

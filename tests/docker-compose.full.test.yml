@@ -1,23 +1,22 @@
 services:
   uploader:
-    image: localhost/uploader:test
-    # Overwrite entrypoint for manual debugging
-    # entrypoint: ["/bin/bash", "-c", "sleep infinity"]
+    image: localhost/uploader:full-test
+    container_name: paperless-uploader-full-test
     environment:
-      - SAMBA_ENABLED=false # Simplify for integration test
-      - FTP_ENABLED=false
-      - WSDD_ENABLED=false
+      - SAMBA_ENABLED=true
+      - FTP_ENABLED=true
       - WEBDAV_ENABLED=true
       - API_UPLOADER_ENABLED=true
-      - API_UPLOADER_ON_SUCCESS=${API_UPLOADER_ON_SUCCESS:-delete}
       - PAPERLESS_URL=http://mock-api:8080
-      - PAPERLESS_TOKEN=test-token
+      - PAPERLESS_TOKEN=smoke-test-token
       - PUID=1000
       - PGID=1000
       - CONSUMPTION_DIR=/consumption
       - ARCHIVE_DIR=/archive
     ports:
-      - "8081:8080"
+      - "8081:8080" # WebDAV
+      - "1445:445" # Samba
+      - "2021:21" # FTP
     volumes:
       - ./integration-data/consumption:/consumption
       - ./integration-data/archive:/archive

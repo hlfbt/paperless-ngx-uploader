@@ -28,7 +28,7 @@ fi
 if [ "$FTP_ENABLED" != "true" ]; then
     echo "FTP is disabled in configuration."
 else
-    touch $contents_d/vsftp
+    touch $contents_d/vsftpd
 fi
 
 if [ "$WEBDAV_ENABLED" != "true" ]; then

@@ -23,7 +23,7 @@ RUN apk add --no-cache \
     findutils
 
 # Create default consumption and archive directories
-RUN mkdir -p /consumption /archive \
+RUN mkdir -p /consumption /archive && \
     chmod -R 775 /consumption /archive
 
 # Copy and prepare scripts

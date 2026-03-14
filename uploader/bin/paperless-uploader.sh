@@ -45,7 +45,7 @@ upload_file() {
 
     if [ -n "$filter" ]; then
         # Only consume files matching the filter
-        if ! [[ "$file_name" ~= "$filter" ]]; then
+        if ! [[ "$file_name" =~ "$filter" ]]; then
             echo "${file_name} not matching filter ${filter}, skipping."
             return
         fi
