@@ -73,15 +73,15 @@ ARG BUILD_DATE
 ARG GITHUB_REPOSITORY
 
 LABEL org.opencontainers.image.title="Paperless-NGX Uploader (Full)" \
-      org.opencontainers.image.description="Paperless-NGX Uploader (Samba ${SAMBA_VERSION}, vsftpd ${VSFTPD_VERSION}, wsdd ${WSDD_VERSION}, WebDAV ${LIGHTTPD_VERSION}) - ${REPO_REF}@${REPO_COMMIT}" \
+      org.opencontainers.image.description="Paperless-NGX Uploader (Samba ${SAMBA_VERSION}, vsftpd ${VSFTPD_VERSION}, wsdd ${WSDD_VERSION}, lighttpd (WebDAV) ${LIGHTTPD_VERSION}) - ${REPO_REF}@${REPO_COMMIT}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${REPO_COMMIT}" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
-      com.paperless_uploader.flavor="full" \
-      com.paperless_uploader.samba_version="${SAMBA_VERSION}" \
-      com.paperless_uploader.vsftpd_version="${VSFTPD_VERSION}" \
-      com.paperless_uploader.wsdd_version="${WSDD_VERSION}" \
-      com.paperless_uploader.lighttpd_version="${LIGHTTPD_VERSION}"
+      io.github.hlfbt.paperless-ngx-uploader.flavor="full" \
+      io.github.hlfbt.paperless-ngx-uploader.samba_version="${SAMBA_VERSION}" \
+      io.github.hlfbt.paperless-ngx-uploader.vsftpd_version="${VSFTPD_VERSION}" \
+      io.github.hlfbt.paperless-ngx-uploader.wsdd_version="${WSDD_VERSION}" \
+      io.github.hlfbt.paperless-ngx-uploader.lighttpd_version="${LIGHTTPD_VERSION}"
 
 # Install full toolset packages and s6-overlay
 RUN apk add --no-cache \
@@ -119,7 +119,7 @@ LABEL org.opencontainers.image.title="Paperless-NGX Uploader (Lightweight)" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${REPO_COMMIT}" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
-      com.paperless_uploader.flavor="lightweight"
+      io.github.hlfbt.paperless-ngx-uploader.flavor="lightweight"
 
 # Set ENTRYPOINT to the lightweight entrypoint script
 ENTRYPOINT ["/usr/local/bin/entrypoint-lightweight.sh"]
