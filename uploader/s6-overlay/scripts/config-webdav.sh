@@ -1,9 +1,8 @@
-#!/bin/bash
+#!/command/with-contenv /bin/bash
 
-if [ "$WEBDAV_ENABLED" != "true" ]; then
-    echo "WebDAV is disabled."
-    exit 0
-fi
+# Set defaults
+CONSUMPTION_DIR="${CONSUMPTION_DIR:-/consumption}"
+WEBDAV_PORT="${WEBDAV_PORT:-8080}"
 
 echo "Configuring WebDAV..."
 
@@ -36,7 +35,7 @@ server.dir-listing = "enable"
     webdav.is-readonly = "disable"
     # sqlite database for locking
     webdav.sqlite-db-name = "/var/run/lighttpd/webdav.db"
-    
+
     auth.backend = "htdigest"
     auth.backend.htdigest.userfile = "$WEBDAV_HTDIGEST_FILE"
     auth.require = ( "" => (
@@ -45,9 +44,6 @@ server.dir-listing = "enable"
         "require" => "valid-user"
     ) )
 }
-
-# Standard error logging
-server.errorlog = "/dev/stderr"
 EOF
 
 # Create the htdigest file

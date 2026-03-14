@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/command/with-contenv /bin/bash
 
-# Set PUID/PGID
-PUID=${PUID:-1000}
-PGID=${PGID:-1000}
+# Set defaults
+PUID="${PUID:-1000}"
+PGID="${PGID:-1000}"
+CONSUMPTION_DIR="${CONSUMPTION_DIR:-/consumption}"
+ARCHIVE_DIR="${ARCHIVE_DIR:-/archive}"
 
 # Create group if it doesn't exist
 if ! getent group paperless > /dev/null; then
@@ -16,9 +18,9 @@ fi
 
 # Set permissions for consumption and archive directory
 mkdir -p "$CONSUMPTION_DIR"
-chown "$PUID:$PGID" "$CONSUMPTION_DIR"
+chown "${PUID}:${PGID}" "$CONSUMPTION_DIR"
 chmod 775 "$CONSUMPTION_DIR"
 
 mkdir -p "$ARCHIVE_DIR"
-chown "$PUID:$PGID" "$ARCHIVE_DIR"
+chown "${PUID}:${PGID}" "$ARCHIVE_DIR"
 chmod 775 "$ARCHIVE_DIR"

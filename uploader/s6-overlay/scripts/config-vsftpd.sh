@@ -1,9 +1,4 @@
-#!/bin/bash
-
-if [ "$FTP_ENABLED" != "true" ]; then
-    echo "FTP is disabled."
-    exit 0
-fi
+#!/command/with-contenv /bin/bash
 
 echo "Configuring vsftpd..."
 

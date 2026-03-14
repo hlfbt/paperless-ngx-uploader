@@ -1,9 +1,8 @@
 #!/command/with-contenv /bin/bash
 
-# Call the shared api-uploader script
-/etc/cont-init.d/05-api-uploader.sh
+/usr/local/bin/paperless-uploader.sh
 
-# If in oneshot mode, the above script will exit 0. 
+# If in oneshot mode, the above script will exit 0.
 # In that case, we trigger a halt for s6-overlay.
 if [ "$API_UPLOADER_ONESHOT" = "true" ]; then
     echo "Oneshot mode: finished initial scan. Exiting container..."

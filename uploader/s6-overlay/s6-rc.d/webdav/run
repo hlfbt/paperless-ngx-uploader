@@ -1,7 +1,5 @@
 #!/command/with-contenv /bin/bash
-if [ "$WEBDAV_ENABLED" != "true" ]; then
-    echo "WebDAV is disabled. Exiting."
-    exit 0
-fi
+
 echo "Starting WebDAV (lighttpd)..."
+
 exec lighttpd -D -f /etc/lighttpd/lighttpd.conf
