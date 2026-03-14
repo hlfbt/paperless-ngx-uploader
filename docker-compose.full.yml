@@ -10,15 +10,19 @@ services:
       - FTP_ENABLED=true
       - FTP_USER=admin
       - FTP_PASS=password123
+      - WEBDAV_ENABLED=true
+      - WEBDAV_USER=admin
+      - WEBDAV_PASS=password123
       - WSDD_ENABLED=true
-      - API_UPLOADER_ENABLED=false
+      - API_UPLOADER_ENABLED=true
       - API_UPLOADER_ON_SUCCESS=archive # delete or archive
-      - ARCHIVE_DIR=/archive
       - PAPERLESS_URL=https://paperless.example.com
       - PAPERLESS_TOKEN=your_token_here
       - PUID=1000
       - PGID=1000
       - CONSUMPTION_DIR=/consumption
+      - ARCHIVE_DIR=/archive
+      - 'CONSUMPTION_FILTER=^SCAN[0-9a-zA-Z]+_.*$'
       - PASV_ADDRESS=127.0.0.1  # Change to your host IP for external access
     volumes:
       - ./consumption:/consumption
@@ -31,4 +35,5 @@ services:
       - "21100-21110:21100-21110"
       - "3702:3702/udp"
       - "5357:5357"
+      - "8080:8080"
     restart: unless-stopped
