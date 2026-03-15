@@ -2,4 +2,4 @@
 
 echo "Starting Samba..."
 
-exec smbd -F --no-process-group --log-stdout
+exec smbd -F --no-process-group --debug-stdout

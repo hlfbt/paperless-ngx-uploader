@@ -2,6 +2,7 @@
 
 services:
   uploader:
+    #image: ghcr.io/hlfbt/paperless-ngx-uploader:lightweight
     build:
       context: ./uploader
       args:

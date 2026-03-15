@@ -1,5 +1,6 @@
 services:
   uploader:
+    #image: ghcr.io/hlfbt/paperless-ngx-uploader:full
     build:
       context: ./uploader
     container_name: paperless-uploader
