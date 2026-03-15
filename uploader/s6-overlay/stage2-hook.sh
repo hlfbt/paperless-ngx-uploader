@@ -15,49 +15,48 @@ mkdir -p $contents_d 2>/dev/null
 
 echo -n "Paperless API Uploader: "
 if [ "$API_UPLOADER_ENABLED" != "true" ]; then
-    echo -n "${MAGENTA}disabled${NC}"
+    echo -en "${MAGENTA}disabled${NC}"
 else
-    echo -n "${GREEN}enabled${NC}"
+    echo -en "${GREEN}enabled${NC}"
     touch $contents_d/paperless-uploader
 fi
 
 if [ "$API_UPLOADER_ONESHOT" != "true" ]; then
-    echo " ${GRAY}(inotify)${NC}"
+    echo -e " ${GRAY}(inotify)${NC}"
     echo "longrun" > $s6_rc_d/paperless-uploader/type
 else
-    echo " ${CYAN}(oneshot)${NC}"
+    echo -e " ${CYAN}(oneshot)${NC}"
     echo "oneshot" > $s6_rc_d/paperless-uploader/type
 fi
 
 echo -n "Samba: "
 if [ "$SAMBA_ENABLED" != "true" ]; then
-    echo "Samba is disabled in configuration."
-    echo "${MAGENTA}disabled${NC}"
+    echo -e "${MAGENTA}disabled${NC}"
 else
-    echo "${GREEN}enabled${NC}"
+    echo -e "${GREEN}enabled${NC}"
     touch $contents_d/samba
 fi
 
 echo -n "FTP: "
 if [ "$FTP_ENABLED" != "true" ]; then
-    echo "${MAGENTA}disabled${NC}"
+    echo -e "${MAGENTA}disabled${NC}"
 else
-    echo "${GREEN}enabled${NC}"
+    echo -e "${GREEN}enabled${NC}"
     touch $contents_d/vsftpd
 fi
 
 echo -n "WebDAV: "
 if [ "$WEBDAV_ENABLED" != "true" ]; then
-    echo "${MAGENTA}disabled${NC}"
+    echo -e "${MAGENTA}disabled${NC}"
 else
-    echo "${GREEN}enabled${NC}"
+    echo -e "${GREEN}enabled${NC}"
     touch $contents_d/webdav
 fi
 
 echo -n "WSDD: "
 if [ "$WSDD_ENABLED" != "true" ] || [ "$SAMBA_ENABLED" != "true" ]; then
-    echo "${MAGENTA}disabled${NC}"
+    echo -e "${MAGENTA}disabled${NC}"
 else
-    echo "${GREEN}enabled${NC}"
+    echo -e "${GREEN}enabled${NC}"
     touch $contents_d/wsdd
 fi
