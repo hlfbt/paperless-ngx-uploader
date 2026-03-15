@@ -1,44 +1,63 @@
 #!/command/with-contenv /bin/bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+GRAY='\033[0;37m'
+NC='\033[0m'
+
 echo "Configuring s6 services..."
 
 s6_rc_d=/etc/s6-overlay/s6-rc.d
 contents_d=$s6_rc_d/user/contents.d
 mkdir -p $contents_d 2>/dev/null
 
+echo -n "Paperless API Uploader: "
 if [ "$API_UPLOADER_ENABLED" != "true" ]; then
-    echo "Paperless API Uploader is disabled in configuration."
+    echo -n "${MAGENTA}disabled${NC}"
 else
+    echo -n "${GREEN}enabled${NC}"
     touch $contents_d/paperless-uploader
 fi
 
 if [ "$API_UPLOADER_ONESHOT" != "true" ]; then
+    echo " ${GRAY}(inotify)${NC}"
     echo "longrun" > $s6_rc_d/paperless-uploader/type
 else
-    echo "Paperless API Uploader Oneshot mode enabled in configuration."
+    echo " ${CYAN}(oneshot)${NC}"
     echo "oneshot" > $s6_rc_d/paperless-uploader/type
 fi
 
+echo -n "Samba: "
 if [ "$SAMBA_ENABLED" != "true" ]; then
     echo "Samba is disabled in configuration."
+    echo "${MAGENTA}disabled${NC}"
 else
+    echo "${GREEN}enabled${NC}"
     touch $contents_d/samba
 fi
 
+echo -n "FTP: "
 if [ "$FTP_ENABLED" != "true" ]; then
-    echo "FTP is disabled in configuration."
+    echo "${MAGENTA}disabled${NC}"
 else
+    echo "${GREEN}enabled${NC}"
     touch $contents_d/vsftpd
 fi
 
+echo -n "WebDAV: "
 if [ "$WEBDAV_ENABLED" != "true" ]; then
-    echo "WebDAV is disabled in configuration."
+    echo "${MAGENTA}disabled${NC}"
 else
+    echo "${GREEN}enabled${NC}"
     touch $contents_d/webdav
 fi
 
+echo -n "WSDD: "
 if [ "$WSDD_ENABLED" != "true" ] || [ "$SAMBA_ENABLED" != "true" ]; then
-    echo "WSDD is disabled in configuration or Samba is missing."
+    echo "${MAGENTA}disabled${NC}"
 else
+    echo "${GREEN}enabled${NC}"
     touch $contents_d/wsdd
 fi
