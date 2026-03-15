@@ -140,6 +140,19 @@ run_full_smoke_test() {
         exit 1
     fi
 
+    # Detailed service health check using s6-rc
+    echo "Checking status of s6 services..."
+    failed_services=$( $DOCKER_BIN exec paperless-uploader-full-test /command/s6-rc -da list 2>/dev/null | grep -v "s6rc-fdholder" || true )
+    
+    if [ -z "$failed_services" ]; then
+        echo -e "${GREEN}PASS: All orchestrated services are up.${NC}"
+    else
+        echo -e "${RED}FAIL: Some services are down:${NC}"
+        echo "$failed_services"
+        $COMPOSE_CMD -f tests/docker-compose.full.test.yml logs uploader
+        exit 1
+    fi
+
     $COMPOSE_CMD -f tests/docker-compose.full.test.yml down -v
 }
 
