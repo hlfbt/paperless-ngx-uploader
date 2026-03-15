@@ -34,12 +34,22 @@ fi
 
 echo "Starting Paperless API Uploader monitoring ${consumption_dir}..."
 
+archive_inside_consumption=0
+[ "$consumption_dir" = "${archive_dir:0:${#consumption_dir}}" ] && archive_inside_consumption=1
+
 upload_file() {
     local file_path="$1"
     local file_name=$(basename "$file_path")
 
     # Skip hidden files
     if [[ "$file_name" == .* ]]; then
+        return
+    fi
+
+    # Skip archived files
+    if [ "$archive_inside_consumption" -eq 1 ] && \
+       [ "${file_path:0:${#archive_dir}}" = "$archive_dir" ]
+    then
         return
     fi
 
