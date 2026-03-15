@@ -36,14 +36,14 @@ echo "Starting Paperless API Uploader..."
 echo "Endpoint: ${api_url}"
 echo "Monitoring: ${consumption_dir} (${runmode})"
 echo -n "On Success: ${on_success}" && ([ "$on_success" = "archive" ] && echo " (${archive_dir})" || echo)
-echo "Filter: ${filter}"
+echo "Filter: /${filter}/"
 
 archive_inside_consumption=0
 [ "$consumption_dir" = "${archive_dir:0:${#consumption_dir}}" ] && archive_inside_consumption=1
 
 upload_file() {
     local file_path="$1"
-    local file_name=$(basename "$file_path")
+    local file_name="$(basename "$file_path")"
 
     # Skip hidden files
     if [[ "$file_name" == .* ]]; then
@@ -59,8 +59,8 @@ upload_file() {
 
     if [ -n "$filter" ]; then
         # Only consume files matching the filter
-        if ! [[ "$file_name" =~ "$filter" ]]; then
-            echo "${file_name} not matching filter ${filter}, skipping."
+        if ! [[ "$file_name" =~ $filter ]]; then
+            echo "${file_name} does not match /${filter}/, skipping."
             return 6
         fi
     fi
