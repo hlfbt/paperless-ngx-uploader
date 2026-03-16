@@ -77,6 +77,7 @@ LABEL org.opencontainers.image.title="Paperless-NGX Uploader (Full)" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${REPO_COMMIT}" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
+      org.opencontainers.image.licenses="GPL-3.0" \
       io.github.hlfbt.paperless-ngx-uploader.flavor="full" \
       io.github.hlfbt.paperless-ngx-uploader.samba_version="${SAMBA_VERSION}" \
       io.github.hlfbt.paperless-ngx-uploader.vsftpd_version="${VSFTPD_VERSION}" \
@@ -119,6 +120,7 @@ LABEL org.opencontainers.image.title="Paperless-NGX Uploader (Lightweight)" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${REPO_COMMIT}" \
       org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
+      org.opencontainers.image.licenses="GPL-3.0" \
       io.github.hlfbt.paperless-ngx-uploader.flavor="lightweight"
 
 # Set ENTRYPOINT to the lightweight entrypoint script
