@@ -43,6 +43,7 @@ docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
 | `API_UPLOADER_ENABLED` | `true` | Set to `false` to disable the Paperless API uploader. Note: has no effect in lightweight flavor. | |
 | `API_UPLOADER_ON_SUCCESS` | `delete` | Action after success: `delete`, `archive`, or `none`. | ✔ |
 | `API_UPLOADER_ONESHOT` | `false` | If `true`, the container will exit after a single scan. | ✔ |
+| `COLLATE_ENABLED` | `false` | Set to `true` to enable automatic PDF collation for non-duplex scanners. | ✔ |
 | `PAPERLESS_URL` | | URL of your Paperless-ngx instance (e.g., `https://paperless.example.com`). | ✔ |
 | `PAPERLESS_TOKEN` | | API Token from your Paperless profile. | ✔ |
 | `PUID` | `1000` | User ID for file ownership. | ✔ |

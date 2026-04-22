@@ -34,6 +34,10 @@ commandTests:
     command: "curl"
     args: ["--version"]
     expectedOutput: ["curl .*"]
+  - name: "qpdf is installed"
+    command: "qpdf"
+    args: ["--version"]
+    expectedOutput: ["qpdf version .*"]
 
 fileExistenceTests:
   - name: "Consumption directory exists"

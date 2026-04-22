@@ -29,6 +29,14 @@ else
     echo "oneshot" > $s6_rc_d/paperless-uploader/type
 fi
 
+echo -n "Paperless PDF Collator: "
+if [ "$COLLATE_ENABLED" != "true" ]; then
+    echo -e "${MAGENTA}disabled${NC}"
+else
+    echo -e "${GREEN}enabled${NC}"
+    touch $contents_d/paperless-collator
+fi
+
 echo -n "Samba: "
 if [ "$SAMBA_ENABLED" != "true" ]; then
     echo -e "${MAGENTA}disabled${NC}"

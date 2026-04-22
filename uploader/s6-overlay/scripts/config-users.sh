@@ -21,6 +21,12 @@ mkdir -p "$CONSUMPTION_DIR"
 chown "${PUID}:${PGID}" "$CONSUMPTION_DIR"
 chmod 775 "$CONSUMPTION_DIR"
 
+if [ "$COLLATE_ENABLED" = "true" ]; then
+    mkdir -p "$CONSUMPTION_DIR/collate"
+    chown "${PUID}:${PGID}" "$CONSUMPTION_DIR/collate"
+    chmod 775 "$CONSUMPTION_DIR/collate"
+fi
+
 mkdir -p "$ARCHIVE_DIR"
 chown "${PUID}:${PGID}" "$ARCHIVE_DIR"
 chmod 775 "$ARCHIVE_DIR"

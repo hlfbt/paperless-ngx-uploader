@@ -20,7 +20,8 @@ RUN apk add --no-cache \
     shadow \
     inotify-tools \
     curl \
-    findutils
+    findutils \
+    qpdf
 
 # Create default consumption and archive directories
 RUN mkdir -p /consumption /archive && \
