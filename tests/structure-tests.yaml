@@ -10,6 +10,8 @@ metadataTest:
       value: "true"
     - key: "API_UPLOADER_ENABLED"
       value: "true"
+    - key: "COLLATE_ENABLED"
+      value: "true"
   exposedPorts: ["445", "137", "138", "139", "21", "21100-21110", "8080", "3702", "5357"]
   entrypoint: ["/init"]
 
@@ -57,3 +59,10 @@ fileExistenceTests:
   - name: "Paperless API uploader run script exists"
     path: "/etc/s6-overlay/s6-rc.d/paperless-uploader/run"
     shouldExist: true
+  - name: "Paperless PDF collator run script exists"
+    path: "/etc/s6-overlay/s6-rc.d/paperless-collator/run"
+    shouldExist: true
+  - name: "Collate directory exists"
+    path: "/consumption/collate"
+    shouldExist: true
+    permissions: "drwxrwxr-x"

@@ -7,6 +7,7 @@ services:
       - FTP_ENABLED=true
       - WEBDAV_ENABLED=true
       - API_UPLOADER_ENABLED=true
+      - COLLATE_ENABLED=true
       - PAPERLESS_URL=http://mock-api:8080
       - PAPERLESS_TOKEN=smoke-test-token
       - PUID=${PUID:-1000}

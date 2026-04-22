@@ -4,6 +4,7 @@ services:
     container_name: paperless-uploader-lightweight-test
     environment:
       - API_UPLOADER_ON_SUCCESS=${API_UPLOADER_ON_SUCCESS:-delete}
+      - COLLATE_ENABLED=true
       - PAPERLESS_URL=http://mock-api:8080
       - PAPERLESS_TOKEN=test-token
       - PUID=${PUID:-1000}
