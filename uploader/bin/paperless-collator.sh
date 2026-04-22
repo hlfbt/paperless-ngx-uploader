@@ -32,11 +32,11 @@ collate_files() {
 
     echo "Collating ${file1} and ${file2} into ${output_file}..."
 
-    # Collate: interleave pages. 
+    # Collate: interleave pages.
     # File 1: fronts (1, 2, 3...)
     # File 2: backs in reverse order (3-back, 2-back, 1-back...)
     # qpdf syntax for interleaving: qpdf in.pdf --pages in.pdf 1-z file2.pdf z-1 -- out.pdf
-    if qpdf "$file1" --pages . 1-z "$file2" z-1 --collate -- "$output_file"; then
+    if qpdf --collate "$file1" --pages . 1-z "$file2" z-1 -- "$output_file"; then
         echo "Successfully collated. Deleting source files."
         rm "$file1" "$file2"
         chown "${puid}:${pgid}" "$output_file"
@@ -54,10 +54,10 @@ exec inotifywait -m -e close_write -e moved_to --format '%w%f' "$collate_dir" | 
     if [[ "$file" == *.pdf ]]; then
         # Small delay to ensure files are settled
         sleep 2
-        
+
         # Get all PDFs in the collate directory, sorted alphabetically
         mapfile -t pdf_files < <(find "$collate_dir" -maxdepth 1 -name "*.pdf" -type f | sort)
-        
+
         if [ "${#pdf_files[@]}" -ge 2 ]; then
             collate_files "${pdf_files[@]}"
         fi
