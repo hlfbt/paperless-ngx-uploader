@@ -1,7 +1,7 @@
 #!/bin/bash
 
 consumption_dir="${CONSUMPTION_DIR:-/consumption}"
-collate_dir="${consumption_dir}/collate"
+collate_dir="${COLLATE_DIR:-${consumption_dir}/collate}"
 puid="${PUID:-1000}"
 pgid="${PGID:-1000}"
 

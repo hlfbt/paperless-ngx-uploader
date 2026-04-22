@@ -10,6 +10,7 @@ services:
     container_name: paperless-uploader
     environment:
       - API_UPLOADER_ON_SUCCESS=archive # delete, archive or none
+      - COLLATE_ENABLED=true
       - PAPERLESS_URL=https://paperless.example.com
       - PAPERLESS_TOKEN=your_token_here
     volumes:

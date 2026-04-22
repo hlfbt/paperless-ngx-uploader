@@ -17,11 +17,13 @@ services:
       - WSDD_ENABLED=true
       - API_UPLOADER_ENABLED=true
       - API_UPLOADER_ON_SUCCESS=archive # delete or archive
+      - COLLATE_ENABLED=true
       - PAPERLESS_URL=https://paperless.example.com
       - PAPERLESS_TOKEN=your_token_here
       - PUID=1000
       - PGID=1000
       - CONSUMPTION_DIR=/consumption
+      - COLLATE_DIR=/consumption/collate
       - ARCHIVE_DIR=/archive
       - 'CONSUMPTION_FILTER=^SCAN[0-9a-zA-Z]+_.*$'
       - PASV_ADDRESS=127.0.0.1  # Change to your host IP for external access

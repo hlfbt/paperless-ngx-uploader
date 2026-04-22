@@ -49,6 +49,7 @@ docker build --build-arg FLAVOR=lightweight -t uploader:lightweight uploader/
 | `PUID` | `1000` | User ID for file ownership. | ✔ |
 | `PGID` | `1000` | Group ID for file ownership. | ✔ |
 | `CONSUMPTION_DIR` | `/consumption` | Path inside container where files go. | ✔ |
+| `COLLATE_DIR` | `${CONSUMPTION_DIR}/collate` | Path inside container where single-sided scans to be collated go. | ✔ |
 | `ARCHIVE_DIR` | `/archive` | Path to store archived files if `archive` action is selected. | ✔ |
 | `CONSUMPTION_FILTER` | | Regular Expression to filter consumed files. Files not matching the filter will be skipped. Not: hidden files (starting with a `.`) are always skipped. | ✔ |
 

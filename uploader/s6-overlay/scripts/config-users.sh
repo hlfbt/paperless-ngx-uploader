@@ -4,6 +4,7 @@
 PUID="${PUID:-1000}"
 PGID="${PGID:-1000}"
 CONSUMPTION_DIR="${CONSUMPTION_DIR:-/consumption}"
+COLLATE_DIR="${COLLATE_DIR:-${CONSUMPTION_DIR}/collate}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/archive}"
 
 # Create group if it doesn't exist
@@ -22,9 +23,9 @@ chown "${PUID}:${PGID}" "$CONSUMPTION_DIR"
 chmod 775 "$CONSUMPTION_DIR"
 
 if [ "$COLLATE_ENABLED" = "true" ]; then
-    mkdir -p "$CONSUMPTION_DIR/collate"
-    chown "${PUID}:${PGID}" "$CONSUMPTION_DIR/collate"
-    chmod 775 "$CONSUMPTION_DIR/collate"
+    mkdir -p "$COLLATE_DIR"
+    chown "${PUID}:${PGID}" "$COLLATE_DIR"
+    chmod 775 "$COLLATE_DIR"
 fi
 
 mkdir -p "$ARCHIVE_DIR"
